@@ -1,0 +1,158 @@
+#app{
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  overflow-x:hidden;
+  overflow-y:auto;
+  scroll-behavior: smooth;
+  background-size: cover;
+  -webkit-background-size: cover;
+  -o-background-size: cover;
+  background-position: center 0;
+}
+#box{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background-size: 100%;
+  background-position: top left;
+  background-position: 0px 0px;
+  background-position: 100% 100%;
+  background:rgba(0,0,0,0.2);
+}
+#main{
+  width: 370px;
+  height: 420px;
+  background-color: #FFF;
+  position: relative;
+  margin: 0 auto;
+  border-radius: 10px;
+  border: solid #CCC 1px;
+  box-shadow: 0px 0px 10px #333;
+}
+#main .logo{
+  width: 80px;
+  height: 80px;
+  background-color: #CCC;
+  margin: 0 auto;
+  margin-top: 40px;
+}
+#main .title{
+  font-size: 20px;
+  text-align: center;
+  margin-top: 10px;
+}
+#main .content{
+  width: 70%;
+  height: 230px;
+  /*background-color: #CCC;*/
+  margin: 0 auto;
+  margin-top: 30px;
+}
+.content input[type="text"]{
+  width: 100%;
+  height: 35px;
+  border: solid #CCC 1px;
+  padding-left: 10px;
+  border-radius: 5px;
+}
+.content input[type="password"]{
+  width: 100%;
+  height: 35px;
+  border: solid #CCC 1px;
+  padding-left: 10px;
+  border-radius: 5px;
+  margin-top: 15px;
+}
+.content .btn{
+  width: 105%;
+  height: 27px;
+  border: none;
+  background-color: #80da01;
+  color: #FFF;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .3s;
+  text-align: center;
+  padding-top: 6px;
+}
+.content .btn:hover{
+  background-color: #7bd200;
+}
+.content .forgetPwd{
+  color: #2ea9d7;
+  float: right;
+  margin-top: 10px;
+}
+.content .forgetPwd:hover{
+  color: #33b9eb;
+}
+#main .back{
+  position: absolute;
+  width: 80px;
+  height: 50px;
+  top: 5px;
+  left: 5px;
+  cursor: pointer;
+}
+#main .back p{
+  position: relative;
+  left: 30px;
+  color: #d2d2d2;
+  font-weight: bold;
+  font-size: 14px;
+  margin-top: 2px;
+}
+#main .back .arrow{
+  width: 7px;
+  height: 7px;
+  position: relative;
+  margin: 0 auto;
+  top: 35%; /*偏移*/
+  left: -20px;
+  cursor: pointer;
+
+  border-top: 3px solid #d2d2d2;
+  border-right: 3px solid #d2d2d2;
+  transform: rotate(-135deg);
+}
+@keyframes back_p_move {
+  from{
+    color: #d2d2d2;
+  }
+  to{
+    color: #b6b6b6;
+  }
+}
+@keyframes back_p_leave {
+  from{
+    color: #b6b6b6;
+  }
+  to{
+    color: #d2d2d2;
+  }
+}
+@keyframes back_arrow_move {
+  from{
+    border-top: 3px solid #d2d2d2;
+    border-right: 3px solid #d2d2d2;
+  }
+  to{
+    border-top: 3px solid #b6b6b6;
+    border-right: 3px solid #b6b6b6;
+  }
+}
+@keyframes back_arrow_leave {
+  from{
+    border-top: 3px solid #b6b6b6;
+    border-right: 3px solid #b6b6b6;
+  }
+  to{
+    border-top: 3px solid #d2d2d2;
+    border-right: 3px solid #d2d2d2;
+  }
+}
