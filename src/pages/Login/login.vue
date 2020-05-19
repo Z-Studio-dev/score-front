@@ -7,7 +7,9 @@
           <div class="arrow"></div>
           <p>返回</p>
         </div>
-        <div class="logo"></div>
+        <div class="logo">
+          <img src="../../../static/images/score_icon.png">
+        </div>
         <div class="title">登录</div>
         <div class="content">
           <form class="layui-form" action="">

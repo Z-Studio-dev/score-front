@@ -28,7 +28,7 @@
     </div>
     <div id="banner">
       <div class="title">
-        <span>Title</span>
+        <span>上善若水</span>
         <div></div>
         <p>/* 这是一个简易的加分系统 */</p>
       </div>
@@ -39,7 +39,9 @@
         <span>分数详情</span>
         <div></div>
       </div>
-      <div class="fraction_box">// TODO  分数可视化</div>
+      <div class="fraction_box">
+        <div id="fraction_lineChart" style="width: 100%;height: 370px;"></div>
+      </div>
     </div>
     <div id="classroom">
       <div class="title">
@@ -88,6 +90,7 @@
         token: '',
         scr: 0,
         fraction: 0,
+        fraction_change: '',
         classname:'',
         classDatails: [],
         studentCount: 0
@@ -129,12 +132,14 @@
             success: function (data) {
               self.classname = data.result.inclass;
               self.fraction = data.result.fraction;
+              self.fraction_change = data.result.fraction_change;
             },
             error: function (data) {
               console.log('失败');
             }
           });
         },500);
+        this.lineChart();
       }
       if(this.role_id == 2){  //教师
         setTimeout(function () {
@@ -154,6 +159,7 @@
           });
         },500);
       }
+
     },
     mounted() {
       let self =this;
@@ -262,6 +268,59 @@
         });
         location.reload();
       },
+      lineChart: function () {
+        var myChart = echarts.init(document.getElementById('fraction_lineChart'));
+
+        let fractionArray = this.fraction_change.split(",");
+        // 指定图表的配置项和数据
+        var option = {
+          title: {
+            text: ''
+          },
+          tooltip: {
+            trigger: 'axis'
+          },
+          legend: {
+            data:['分数']
+          },
+          grid: {
+            left: '3%',
+            right: '6%',
+            bottom: '3%',
+            containLabel: true
+          },
+          toolbox: {
+            feature: {
+              saveAsImage: {}
+            }
+          },
+          xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            data: ['一','二','三','四','五','六','七','八','九','十'],
+            name: '近十天'
+          },
+          yAxis: {
+            type: 'value'
+          },
+          series: [
+            {
+              name:'分数',
+              type:'line',
+              stack: '总量',
+              data: fractionArray.slice(-10)
+            }
+          ]
+        };
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+        setTimeout(function (){
+          window.onresize = function () {
+            myChart.resize();
+          }
+        },200)
+
+      }
     }
   }
 </script>
