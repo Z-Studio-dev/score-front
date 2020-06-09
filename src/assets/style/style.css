@@ -27,6 +27,40 @@
   margin-top: 15px;
   z-index: 10000;
 }
+#nav .logo{
+  position: absolute;
+  font-size: 100px;
+  font-family: "Brush Script MT";
+  color: #FFF;
+  top: -25px;
+  left: 300px;
+}
+.logoTrue{
+  animation: logo_true .5s forwards;
+}
+.logoFalse{
+  animation: logo_false .1s forwards;
+}
+@keyframes logo_true {
+  from{
+    color: #FFF;
+    transform: scale(1);
+  }
+  to{
+    color: #7bd003;
+    transform: scale(0.7);
+  }
+}
+@keyframes logo_false {
+  from{
+    color: #7bd003;
+    transform: scale(0.7);
+  }
+  to{
+    color: #FFF;
+    transform: scale(1);
+  }
+}
 .navTrue{
   animation: nav_true .5s forwards;
 }
@@ -41,7 +75,7 @@
   to{
     background-color: #FFF;
     margin-top: 0px;
-    box-shadow: 0px 3px 20px #dbdbdb;
+    box-shadow: 0px 3px 20px rgba(0,0,0,0.2);;
   }
 }
 @keyframes nav_false {
@@ -270,6 +304,8 @@
   width: 100%;
   min-height: 630px;
   background-color: #FFF;
+  overflow:hidden;
+  padding-bottom: 60px;
 }
 #fraction .title{
   margin: 0 auto; /*水平居中*/
@@ -291,13 +327,15 @@
   background-color: #70c000;
 }
 .fraction_box{
-  clear: both;overflow:hidden;
-  max-width: 1030px;
-  padding-bottom: 40px;
+  clear: both;
+  max-width: 1080px;
   width: 80%;
   margin: 0 auto;
   position: relative;
   top: 100px;
+}
+.fraction_box #fraction_lineChart{
+  margin-bottom: 40px;
 }
 #classroom{
   clear: both;overflow:hidden;
@@ -386,10 +424,11 @@
   box-shadow: 0px 3px 20px #bfbfbf;
 }
 #record{
-  clear: both;overflow:hidden;
+  clear: both;
   width: 100%;
   min-height: 500px;
-  padding-bottom: 50px;
+  overflow:hidden;
+  padding-bottom: 160px;
   background-color: #FFF;
 }
 #record .title{
@@ -410,6 +449,15 @@
   width: 55px;
   height: 3px;
   background-color: #70c000;
+}
+.record_box{
+  clear: both;
+  max-width: 1080px;
+  padding-bottom: 40px;
+  width: 80%;
+  margin: 0 auto;
+  position: relative;
+  top: 100px;
 }
 #bottom{
   width: 100%;

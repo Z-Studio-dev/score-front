@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Home from '@/pages/Home/home'
 import Login from '@/pages/Login/login'
 import Class from '@/pages/Fraction/fraction'
+import PersonalFraction from '@/pages/Fraction/personalFraction'
 
 Vue.use(Router)
 
@@ -20,6 +21,7 @@ export default new Router({
     {path: '/classroom', component: Home, name: 'classroom'},
     {path: '/record', component: Home, name: 'record'},
     {path: '/login', component: Login, name: 'login'},
-    {path: '/class', component: Class, name: 'class'}
+    {path: '/class', component: Class, name: 'class'},
+    {path: '/class/personalFraction', component: PersonalFraction, name: 'personalFraction'}
   ]
 })

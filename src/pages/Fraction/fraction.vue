@@ -53,7 +53,12 @@
           <div align="center" id="Pagination"></div>
         </div>
       </div>
-      <div class="bottom"></div>
+      <div class="bottom">
+        <div class="bottom_btn">
+          <div class="bottom_back" @click="back()">< 返回首页</div>
+          <div class="bottom_fraction" @click="show($event, '分数详情', 'http://localhost:8080/#/class/personalFraction')">分数详情 ></div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -80,6 +85,7 @@
           nickname: '',
           role_id: ''
         },
+        screenWidth: 1920,
       }
     },
     created() {
@@ -97,7 +103,6 @@
           },
           dataType: 'json'
         }).then(function (data) {
-          console.log(data);
           self.user.username = data.result.username;
           self.user.nickname = data.result.nickname;
           self.user.role_id = data.result.role_id;
@@ -156,9 +161,98 @@
             layer = layui.layer;
           form.render();
         });
+      this.screenWidth = document.body.clientWidth;
+      window.onresize = () => {
+        return (() => {
+          this.screenWidth = document.body.clientWidth;
+        })();
+      };
+    },
+    watch:{
+      screenWidth(val){
+        if(!this.timer){
+          this.screenWidth = val;
+          this.timer = true;
+          let _this = this;
+          setTimeout(function () {
+            if(_this.screenWidth < 1300){
+              L2Dwidget.init({
+                "model": {
+                  jsonPath: "https://unpkg.com/live2d-widget-model-hijiki@1.0.5/assets/hijiki.model.json",
+                  "scale": 1
+                },
+                "display": {
+                  "position": "right",
+                  "width": 90,
+                  "height": 150,
+                  "hOffset": 10,
+                  "vOffset": -20
+                },
+                "mobile": {
+                  "show": true,
+                  "scale": 0.5
+                },
+                "react": {
+                  "opacityDefault": 0.0,
+                  "opacityOnHover": 0.0
+                }
+              });
+            }else{
+              L2Dwidget.init({
+                "model": {
+                  jsonPath: "https://unpkg.com/live2d-widget-model-hijiki@1.0.5/assets/hijiki.model.json",
+                  "scale": 1
+                },
+                "display": {
+                  "position": "right",
+                  "width": 90,
+                  "height": 150,
+                  "hOffset": 10,
+                  "vOffset": -20
+                },
+                "mobile": {
+                  "show": true,
+                  "scale": 0.5
+                },
+                "react": {
+                  "opacityDefault": 0.9,
+                  "opacityOnHover": 0.2
+                }
+              });
+            }
+            _this.timer = false;
+          }, 1000);
+        }
+      }
     },
     methods: {
-      layuiPage(total, pageSize, self, classname){
+      getAllStudent: function (self, sortColumn, sort, recordsTotal) {
+        $.ajax({
+          url: 'http://localhost:8848/student/list/classname',
+          type: 'GET',
+          async : false,
+          data: {
+            draw: 1,
+            start: self.start,
+            length: self.pagesize,
+            className: self.$route.query.classname,
+            sort: sort,
+            sortColumn: sortColumn
+          },
+          dataType: 'json'
+        }).then(function (msg) {
+          self.datails = msg.data;
+          self.count = msg.recordsTotal;
+          self.filterCount = msg.recordsFiltered;
+          recordsTotal = msg.recordsTotal;
+        }).fail(function () {
+          console.log('失败');
+        });
+        setTimeout(function () {
+          self.layuiPage(recordsTotal, self.pagesize, self, self.$route.query.classname, sort, sortColumn);
+        }, 1000)
+      },
+      layuiPage(total, pageSize, self, classname, sort, sortColumn){
         layui.use(['laypage', 'layer'], function(){
           var laypage = layui.laypage
             ,layer = layui.layer;
@@ -178,7 +272,9 @@
                     draw: 1,
                     start: obj.curr,
                     length: obj.limit,
-                    className: classname
+                    className: classname,
+                    sort: sort,
+                    sortColumn: sortColumn
                   },
                   dataType: 'json'
                 }).then(function (msg) {
@@ -195,13 +291,15 @@
       },
       addPoints: function(id, fraction, _this, nickname){
         let score = $('#scoreInput'+id).val();
+        let that = this;
         if(score == null || score == '') {
           $.ajax({
             url: 'http://localhost:8848/student/fraction',
             type: 'PUT',
             data: {
               'id': id,
-              'fraction': fraction + 1
+              'fraction': fraction + 1,
+              'operator': that.user.nickname
             },
             dataType: 'json',
             success: function (data) {
@@ -221,7 +319,8 @@
               type: 'PUT',
               data: {
                 'id': id,
-                'fraction': parseInt(fraction) + parseInt(score)
+                'fraction': parseInt(fraction) + parseInt(score),
+                'operator': that.user.nickname
               },
               dataType: 'json',
               success: function (data) {
@@ -239,13 +338,15 @@
       },
       minusPoints: function(id, fraction, _this, nickname){
         let score = $('#scoreInput'+id).val();
+        let that = this;
         if(score == null || score == '') {
           $.ajax({
             url: 'http://localhost:8848/student/fraction',
             type: 'PUT',
             data: {
               'id': id,
-              'fraction': fraction - 1
+              'fraction': fraction - 1,
+              'operator': that.user.nickname
             },
             dataType: 'json',
             success: function (data) {
@@ -265,7 +366,8 @@
               type: 'PUT',
               data: {
                 'id': id,
-                'fraction': parseInt(fraction) - parseInt(score)
+                'fraction': parseInt(fraction) - parseInt(score),
+                'operator': that.user.nickname
               },
               dataType: 'json',
               success: function (data) {
@@ -374,33 +476,26 @@
       back: function () {
         this.$router.push({path:'/home'});
       },
-
-      getAllStudent: function (self, sortColumn, sort, recordsTotal) {
-        $.ajax({
-          url: 'http://localhost:8848/student/list/classname',
-          type: 'GET',
-          async : false,
-          data: {
-            draw: 1,
-            start: self.start,
-            length: self.pagesize,
-            className: self.$route.query.classname,
-            sort: sort,
-            sortColumn: sortColumn
-          },
-          dataType: 'json'
-        }).then(function (msg) {
-          self.datails = msg.data;
-          self.count = msg.recordsTotal;
-          self.filterCount = msg.recordsFiltered;
-          recordsTotal = msg.recordsTotal;
-        }).fail(function () {
-          console.log('失败');
+      show: function (e, title, content) {
+        var that = this;
+        //多窗口模式，层叠置顶
+        layer.open({
+          type: 2 //此处以iframe举例
+          ,title: title
+          ,area: ['50%', '550px']
+          ,shade: 0.4
+          ,maxmin: true
+          ,minwidth: 800
+          ,content: content + '?classname=' + that.classname
+          // ,data: that.classname
+          ,yes: function(){
+            $(that).click();
+          }
+          ,btn2: function(){
+            layer.closeAll();
+          }
         });
-        setTimeout(function () {
-          self.layuiPage(recordsTotal, self.pagesize, self, self.$route.query.classname);
-        }, 1000)
-      }
+      },
     }
   }
 </script>
