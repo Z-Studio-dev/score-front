@@ -48,9 +48,9 @@
           <!-- 班级选择器 -->
           <div style="width: 230px;position: absolute;right: 0px" class="layui-form-item">
             <div class="layui-input-block">
-              <select>
+              <select lay-filter="showClassAvg">
                 <option value="" selected=""></option>
-                <option></option>
+                <option :value="classDatail.classname" v-for="classDatail in classDatails" v-text="classDatail.classname"></option>
               </select>
             </div>
           </div>
@@ -105,7 +105,7 @@
               <tbody>
               <tr v-for="logDatail in logDatails">
                 <td>
-                  <input type="checkbox" :value="logDatail.id" lay-skin="primary">
+                  <input type="checkbox" :id="logDatail.id" :value="logDatail.id" lay-skin="primary">
                 </td>
                 <td v-text="logDatail.name"></td>
                 <td v-text="logDatail.username"></td>
@@ -133,7 +133,11 @@
       </div>
     </div>
     <div id="bottom">
-
+    </div>
+    <div class="classButton" v-if="role_id == 1 || role_id == 3" v-for="classDatail in classDatails">
+      <a href="#" @click="hrefClass(classDatail.classname)">
+        <i class="layui-icon">&#xe670;</i>
+      </a>
     </div>
   </div>
 </template>
@@ -141,9 +145,11 @@
 <script>
   import $ from 'jquery'
   import {formatDate} from "../../util/formatDate"
-
   export default {
     name: 'app',
+    components: {
+
+    },
     data() {
       return {
         note: {
@@ -234,7 +240,111 @@
         },500);
         this.lineChart_avg();
       }
+      layui.use(['form', 'layer','jquery'],
+        function() {
+          let form = layui.form,
+            layer = layui.layer;
+          // 监听全选
+          form.on('checkbox(checkall)', function(data){
 
+            if(data.elem.checked){
+              $('tbody input').prop('checked',true);
+            }else{
+              $('tbody input').prop('checked',false);
+            }
+            form.render('checkbox');
+          });
+
+          form.on('select(showClassAvg)',function (data) {
+            let self = this;
+            let classArray = new Array();
+            $.ajax({
+              url: 'http://localhost:8848/student/list/classname',
+              type: 'GET',
+              async : false,
+              data: {
+                draw: 1,
+                start: 1,
+                length: 100,
+                className: data.value,
+                sort: 'asc',
+                sortColumn: 'username'
+              },
+              dataType: 'json'
+            }).then(function (msg) {
+              let array = new Array();
+              for(let i=0;i<msg.recordsTotal;i++){
+                array.push(msg.data[i].fraction_change.split(','));
+              }
+              for(let i=0;i<array[0].length;i++){
+                let sum = 0;
+                for(let j=0;j<array.length;j++){
+                  if(array[j][i] == null) {
+                    continue;
+                  }
+                  sum += parseInt(array[j][i]);
+
+                }
+                classArray.push((sum/msg.recordsTotal).toFixed(1));
+              }
+            }).fail(function () {
+              console.log('失败');
+            });
+            setTimeout(function () {
+              var myChart = echarts.init(document.getElementById('fraction_lineChart_avg'));
+
+              // 指定图表的配置项和数据
+              var option = {
+                title: {
+                  text: ''
+                },
+                tooltip: {
+                  trigger: 'axis'
+                },
+                legend: {
+                  data:['班级平均分']
+                },
+                grid: {
+                  left: '3%',
+                  right: '6%',
+                  bottom: '3%',
+                  containLabel: true
+                },
+                toolbox: {
+                  feature: {
+                    saveAsImage: {}
+                  }
+                },
+                xAxis: {
+                  type: 'category',
+                  boundaryGap: false,
+                  data: ['一','二','三','四','五','六','七','八','九','十'],
+                  name: '近十天'
+                },
+                yAxis: {
+                  type: 'value'
+                },
+                series: [
+                  {
+                    name:'班级平均分',
+                    type:'line',
+                    stack: '总量',
+                    data: classArray.slice(-10)
+                  }
+                ]
+              }
+              // 使用刚指定的配置项和数据显示图表。
+              myChart.setOption(option);
+              setTimeout(function (){
+                window.onresize = function () {
+                  myChart.resize();
+                }
+              },200);
+            }, 300)
+
+          });
+          form.render();
+        });
     },
     mounted() {
       let self =this;
@@ -254,22 +364,6 @@
           }
         });
       },1000);
-      layui.use(['form', 'layer','jquery'],
-        function() {
-          let form = layui.form,
-            layer = layui.layer;
-
-          // 监听全选
-          form.on('checkbox(checkall)', function(data){
-
-            if(data.elem.checked){
-              $('tbody input').prop('checked',true);
-            }else{
-              $('tbody input').prop('checked',false);
-            }
-            form.render('checkbox');
-          });
-        });
       setTimeout(function () {
         L2Dwidget.init({
           "model": {
@@ -293,7 +387,6 @@
           }
         });
       },2000)
-
     },
     methods:{
       countStudent: function(className) {
@@ -448,7 +541,7 @@
               name:'班级平均分',
               type:'line',
               stack: '总量',
-              data: fractionArray.slice(-10)
+              data: ''
             }
           ]
         };
@@ -473,7 +566,7 @@
             searchKey: searchKey
           },
           dataType: 'json'
-        }).then(function (msg) {console.log(msg);
+        }).then(function (msg) {
           self.logDatails = msg.data;
           self.count = msg.recordsTotal;
           self.filterCount = msg.recordsFiltered;
@@ -487,11 +580,10 @@
         }, 500);
       },
       layuiPage(total, pageSize, self, searchKey){
-        layui.use(['laypage', 'layer', 'form'], function(){
+        layui.use(['laypage', 'layer'], function(){
           let laypage = layui.laypage,
-              layer = layui.layer,
-              form = layui.form;
-          form.render();
+              layer = layui.layer;
+
           laypage.render({
             elem: 'Pagination',
             count: total,
@@ -499,7 +591,6 @@
             limit: pageSize,
             theme: '#1E9FFF',
             jump: function(obj, first) {
-              form.render();
               if(!first) {
                 $.ajax({
                   url: 'http://localhost:8848/fractionLog/list',
@@ -537,64 +628,75 @@
       delfractionLog: function (id) {
         let ids = id;
         let that = this;
-        layer.confirm('确认要彻底删除吗？',function(index){
-          $.ajax({
-            url: 'http://localhost:8848/fractionLog/del',
-            type: 'DELETE',
-            data: {
-              'ids': ids,
-            },
-            dataType: 'json',
-            success: function (data) {
-              if(data.success) {
-                layer.msg('已彻底删除!',{icon: 1,time:1000});
-                that.fractionLog(that, that.start, 10, "");
-              } else {
-                layer.msg(data.message + ' 删除失败',{icon: 2,time:1000});
+        if(that.role_id == 2) {
+          layer.confirm('确认要彻底删除吗？',function(index){
+            $.ajax({
+              url: 'http://localhost:8848/fractionLog/del',
+              type: 'DELETE',
+              data: {
+                'ids': ids,
+              },
+              dataType: 'json',
+              success: function (data) {
+                if(data.success) {
+                  layer.msg('已彻底删除!',{icon: 1,time:1000});
+                  $("#"+id).parents("tr").remove();
+                } else {
+                  layer.msg(data.message + ' 删除失败',{icon: 2,time:1000});
+                }
+
+              },
+              error: function (data) {
+                layer.msg('删除失败',{icon: 2,time:1000});
               }
+            });
 
-            },
-            error: function (data) {
-              layer.msg('删除失败',{icon: 2,time:1000});
-            }
           });
+        }else {
+          layer.msg('抱歉，您没有该权限！看就看，点它干什么...',{icon: 2,time:2000});
+        }
 
-        });
       },
       // 批量删除分数日志
       delAllLog: function () {
         let ids = [];
         let that = this;
-        // 获取选中的id
-        $('tbody input[type="checkbox"]').each(function(index, el) {
-          if($(this).prop('checked')){
-            ids.push($(this).value)
-          }
-        });
-        let str = "确认要删除所选的" + ids.length +"条数据吗？";
-        alert(ids);
-        // layer.confirm(str ,function(index){
-        //   $.ajax({
-        //     url: 'http://49.233.182.19:8848/fractionLog/del',
-        //     type: 'PUT',
-        //     data: {
-        //       'ids': ""+ids
-        //     },
-        //     dataType: 'json',
-        //     success: function (data) {
-        //       if(data.success) {
-        //         that.fractionLog(that, 10, "");
-        //         layer.msg('移除成功!',{icon: 1,time:1000});
-        //       } else {
-        //         layer.msg(data.message + ' 移除失败',{icon: 2,time:1000});
-        //       }
-        //
-        //     },
-        //     error: function (data) {
-        //       layer.msg('移除失败',{icon: 2,time:1000});
-        //     }
-        //   });
-        // });
+        if(that.role_id == 2) {
+          // 获取选中的id
+          $('tbody input[type="checkbox"]').each(function(index, el) {
+            if($(this).prop('checked')){
+              ids.push($(this).val())
+            }
+          });
+          let str = "确认要删除所选的" + ids.length +"条数据吗？";
+          layer.confirm(str ,function(index){
+            $.ajax({
+              url: 'http://localhost:8848/fractionLog/del',
+              type: 'DELETE',
+              data: {
+                'ids': ""+ids
+              },
+              dataType: 'json',
+              success: function (data) {
+                if(data.success) {
+                  // $(".layui-form-checked").not('.header').parents('tr').remove();
+                  for(let i = 0; i < ids.length; i++) {
+                    $("#"+ids[i]).parents("tr").remove();
+                  }
+                  layer.msg('移除成功!',{icon: 1,time:1000});
+                } else {
+                  layer.msg(data.message + ' 移除失败',{icon: 2,time:1000});
+                }
+
+              },
+              error: function (data) {
+                layer.msg('移除失败',{icon: 2,time:1000});
+              }
+            });
+          });
+        }else {
+          layer.msg('抱歉，您没有该权限！看就看，点它干什么...',{icon: 2,time:2000});
+        }
       }
     },
     filters: {
@@ -612,5 +714,5 @@
 </script>
 
 <style scoped>
-  @import "../../assets/style/style.css";
+  @import "../../assets/style/home.css";
 </style>
