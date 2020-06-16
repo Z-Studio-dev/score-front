@@ -28,6 +28,7 @@
 
 <script>
   import $ from 'jquery'
+  import { setStorage, getStorage, removeStorage } from '../../util/storage'
   export default {
     name: 'Login',
     data() {
@@ -68,26 +69,36 @@
     methods: {
       login: function () {
         let self = this;
+        let username = $("input[name='username']").val();
+        let password = $("input[name='pass']").val();
         $.ajax({
           url: 'http://localhost:8848/user/login',
           type: 'POST',
           contentType: 'application/json',
           dataType: 'json',
           data: JSON.stringify({
-            'userName': $("input[name='username']").val(),
-            'userPwd': $("input[name='pass']").val()
+            'userName': username,
+            'userPwd': password
           }),
           success: function (data) {
             if(data.result.username == '' || data.result.username == null) {
               layer.msg('登录失败 '+data.result.message,{icon: 2,time:1000});
             }else {
+              if($("input[name='rememberPwd']").prop("checked")){
+                setStorage('remember', 'true');
+                setStorage('rusername', username);
+                setStorage('rpassword', password);
+              }else {
+                setStorage('remember', 'false');
+                removeStorage('rusername');
+                removeStorage('rpassword');
+              }
               layer.msg(data.result.message+' 正在自动跳转...',{icon: 1,time:1500});
               setTimeout(function () {
                 sessionStorage.setItem('token', data.result.token);
                 self.$router.push({path: '/'});
               }, 1500)
             }
-
           },
           error: function (data) {
             layer.msg('登录失败 '+data.result.message,{icon: 2,time:1000});

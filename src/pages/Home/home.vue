@@ -145,6 +145,7 @@
 <script>
   import $ from 'jquery'
   import {formatDate} from "../../util/formatDate"
+  import { setStorage, getStorage, removeStorage } from '../../util/storage'
   export default {
     name: 'app',
     components: {
@@ -176,6 +177,9 @@
       let self = this;
       let recordsTotal = 0;
       this.token = sessionStorage.getItem('token');
+      // 自动登录
+      this.getRemembered();
+
       if(this.token != '' || this.token != null) {
         $.ajax({
           url: 'http://localhost:8848/user/checklogin',
@@ -431,6 +435,31 @@
           $("#nav .layui-icon").css("color","#FFF");
         }
       },
+      getRemembered: function() {
+        if(sessionStorage.getItem('token') == null || sessionStorage.getItem('token') == '') {
+          let username = getStorage('rusername');
+          let password = getStorage('rpassword');
+          console.log(username+" "+password);
+          $.ajax({
+            url: 'http://localhost:8848/user/login',
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify({
+              'userName': username,
+              'userPwd': password
+            }),
+            success: function (data) {
+              sessionStorage.setItem('token', data.result.token);
+              location.reload();
+            },
+            error: function (data) {
+              layer.msg('登录失败 '+data.result.message,{icon: 2,time:1000});
+            }
+          });
+        }
+
+      },
       logout:function () {
         let self = this;
         $.ajax({
@@ -679,7 +708,6 @@
               dataType: 'json',
               success: function (data) {
                 if(data.success) {
-                  // $(".layui-form-checked").not('.header').parents('tr').remove();
                   for(let i = 0; i < ids.length; i++) {
                     $("#"+ids[i]).parents("tr").remove();
                   }
